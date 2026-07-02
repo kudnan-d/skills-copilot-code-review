@@ -68,7 +68,19 @@ def get_available_days() -> List[str]:
 
 @router.post("/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str, teacher_username: Optional[str] = Query(None)):
-    """Sign up a student for an activity - requires teacher authentication"""
+    """Sign up a student for an activity - requires teacher authentication.
+    
+    Args:
+        activity_name: Name of the activity
+        email: Student email to register
+        teacher_username: Authenticated teacher's username
+        
+    Returns:
+        Confirmation message
+        
+    Raises:
+        HTTPException: If validation fails or operation cannot complete
+    """
     # Check teacher authentication
     if not teacher_username:
         raise HTTPException(
@@ -79,6 +91,12 @@ def signup_for_activity(activity_name: str, email: str, teacher_username: Option
         raise HTTPException(
             status_code=401, detail="Invalid teacher credentials")
 
+    # Validate email format
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        raise HTTPException(
+            status_code=400, detail="Invalid email format")
+
     # Get the activity
     activity = activities_collection.find_one({"_id": activity_name})
     if not activity:
@@ -88,6 +106,11 @@ def signup_for_activity(activity_name: str, email: str, teacher_username: Option
     if email in activity["participants"]:
         raise HTTPException(
             status_code=400, detail="Already signed up for this activity")
+    
+    # Check capacity
+    if len(activity["participants"]) >= activity["max_participants"]:
+        raise HTTPException(
+            status_code=400, detail="Activity is at full capacity")
 
     # Add student to participants
     result = activities_collection.update_one(
@@ -104,7 +127,19 @@ def signup_for_activity(activity_name: str, email: str, teacher_username: Option
 
 @router.post("/{activity_name}/unregister")
 def unregister_from_activity(activity_name: str, email: str, teacher_username: Optional[str] = Query(None)):
-    """Remove a student from an activity - requires teacher authentication"""
+    """Remove a student from an activity - requires teacher authentication.
+    
+    Args:
+        activity_name: Name of the activity
+        email: Student email to unregister
+        teacher_username: Authenticated teacher's username
+        
+    Returns:
+        Confirmation message
+        
+    Raises:
+        HTTPException: If validation fails or operation cannot complete
+    """
     # Check teacher authentication
     if not teacher_username:
         raise HTTPException(
@@ -114,6 +149,12 @@ def unregister_from_activity(activity_name: str, email: str, teacher_username: O
     if not teacher:
         raise HTTPException(
             status_code=401, detail="Invalid teacher credentials")
+
+    # Validate email format
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        raise HTTPException(
+            status_code=400, detail="Invalid email format")
 
     # Get the activity
     activity = activities_collection.find_one({"_id": activity_name})

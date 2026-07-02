@@ -166,17 +166,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Login function
+  // Login function - uses POST body for secure credential handling
   async function login(username, password) {
     try {
-      const response = await fetch(
-        `/auth/login?username=${encodeURIComponent(
-          username
-        )}&password=${encodeURIComponent(password)}`,
-        {
-          method: "POST",
-        }
-      );
+      const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
       const data = await response.json();
 
@@ -190,7 +189,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Login successful
       currentUser = data;
-      localStorage.setItem("currentUser", JSON.stringify(data));
+      try {
+        localStorage.setItem("currentUser", JSON.stringify(data));
+      } catch (e) {
+        console.warn("localStorage unavailable:", e);
+      }
       updateAuthUI();
       closeLoginModalHandler();
       showMessage(`Welcome, ${currentUser.display_name}!`, "success");
@@ -824,8 +827,20 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const email = document.getElementById("email").value;
-    const activity = activityInput.value;
+    const email = document.getElementById("email").value.trim();
+    const activity = activityInput.value.trim();
+
+    // Validate email format
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailPattern.test(email)) {
+      showMessage("Please enter a valid email address", "error");
+      return;
+    }
+
+    if (!activity) {
+      showMessage("Activity name is missing", "error");
+      return;
+    }
 
     try {
       const response = await fetch(

@@ -30,6 +30,11 @@
   --error-light: #ffebee;
   --info: #0c5460;
   --info-light: #d1ecf1;
+  
+  /* Component Z-index levels */
+  --z-base: 1;
+  --z-modal: 1000;
+  --z-tooltip: 1001;
 }
 
 * {
@@ -314,7 +319,7 @@ button {
   border-radius: 4px;
   font-size: 0.8rem;
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-tooltip);
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
@@ -406,7 +411,7 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -680,4 +685,73 @@ footer {
     padding: 10px;
     font-size: 0.9rem;
   }
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 2px rgba(83, 75, 174, 0.1);
+}
+
+.form-group input:invalid {
+  border-color: var(--error);
+}
+
+.form-group input:valid {
+  border-color: var(--success);
+}
+
+/* Message Styles */
+.message {
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.message.success {
+  background-color: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.message.error {
+  background-color: var(--error-light);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+.message.info {
+  background-color: var(--info-light);
+  color: var(--info);
+  border: 1px solid var(--info);
+}
+
+.message.warning {
+  background-color: var(--warning-light);
+  color: var(--warning);
+  border: 1px solid var(--warning);
 }
