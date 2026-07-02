@@ -2,32 +2,52 @@
 MongoDB database configuration and setup for Mergington High School API
 """
 
+import os
 from pymongo import MongoClient
 from argon2 import PasswordHasher, exceptions as argon2_exceptions
 
-# Connect to MongoDB
-client = MongoClient('mongodb://localhost:27017/')
-db = client['mergington_high']
-activities_collection = db['activities']
-teachers_collection = db['teachers']
+# Initialize password hasher once (avoid redundant instantiation)
+password_hasher = PasswordHasher()
+
+# Connect to MongoDB using environment variable with fallback
+MONGO_URL = os.getenv('MONGO_URL', 'mongodb://localhost:27017/')
+try:
+    client = MongoClient(MONGO_URL, serverSelectionTimeoutMS=5000)
+    # Verify connection
+    client.admin.command('ping')
+    db = client['mergington_high']
+    activities_collection = db['activities']
+    teachers_collection = db['teachers']
+except Exception as e:
+    raise RuntimeError(f"Failed to connect to MongoDB: {e}")
 
 # Methods
 
 
-def hash_password(password):
-    """Hash password using Argon2"""
-    ph = PasswordHasher()
-    return ph.hash(password)
+def hash_password(password: str) -> str:
+    """Hash password using Argon2.
+    
+    Args:
+        password: Plain text password to hash
+        
+    Returns:
+        Hashed password string
+    """
+    return password_hasher.hash(password)
 
 
 def verify_password(hashed_password: str, plain_password: str) -> bool:
     """Verify a plain password against an Argon2 hashed password.
 
-    Returns True when the password matches, False otherwise.
+    Args:
+        hashed_password: The hashed password from database
+        plain_password: The plain password to verify
+
+    Returns:
+        True when the password matches, False otherwise.
     """
-    ph = PasswordHasher()
     try:
-        ph.verify(hashed_password, plain_password)
+        password_hasher.verify(hashed_password, plain_password)
         return True
     except argon2_exceptions.VerifyMismatchError:
         return False
