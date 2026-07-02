@@ -664,3 +664,20 @@ footer {
 #logout-button:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* Announcement Banner */
+.announcement-banner {
+  background-color: var(--success);
+  color: white;
+  text-align: center;
+  padding: 15px;
+  font-weight: bold;
+  font-family: inherit;
+}
+
+@media (max-width: 767px) {
+  .announcement-banner {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+}
